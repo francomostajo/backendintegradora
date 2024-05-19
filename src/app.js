@@ -6,7 +6,7 @@ import routesCart from './routes/routesCarts.js';
 import routesUser from './routes/routesUsers.js'
 import __dirname from './utils.js';
 import routesView from './routes/routesViews.js';
-import { initializeSockets } from './controller/socketManager.js';
+import { initializeSockets } from './dao/socketManager.js';
 import mongoose from 'mongoose';
 
 const app = express();
@@ -20,6 +20,7 @@ app.use(express.json());
 
 app.use('/api/products', routesProduct);
 app.use('/api/carts', routesCart);
+app.use ('/api/users', routesUser)
 
 app.use(express.static(__dirname + "/public"));
 
@@ -30,7 +31,6 @@ app.set("view engine", "handlebars");
 
 app.use('/', routesView);
 initializeSockets(socketServer);
-app.use ('/api/users', routesUser)
 mongoose.connect("mongodb+srv://francomostajo:Olivia1998*@francomostajo.nq6loge.mongodb.net/ecommerce?retryWrites=true&w=majority&appName=francomostajo").then(()=>{console.log("conectado a la base de datos")}).catch(error=>console.error("error en la conexion", error))
 export { socketServer };
 

@@ -1,43 +1,45 @@
 import express from 'express';
+import CartModel from '../dao/models/cart.model.js';
+
 const router = express.Router();
-import { CartManager } from '../controller/carts.js'; // Importa CartManager como un miembro nombrado
 
-const cartManager = new CartManager('./src/data/Carritos.json');
+// Obtener todos los carritos
+router.get('/', async (req, res) => {
+    try {
+        const carts = await CartModel.find().populate('products.productId').lean();
+        res.json(carts);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener los carritos' });
+    }
+});
 
-// Ruta para crear un nuevo carrito
+// Crear un nuevo carrito
 router.post('/', async (req, res) => {
-    const newCart = await cartManager.createCart();
-    res.json(newCart);
-});
-
-// Ruta para obtener los productos de un carrito por su ID
-router.get('/:cid', async (req, res) => {
-    const cartId = parseInt(req.params.cid);
-    const cart = await cartManager.getCartById(cartId);
-    if (!cart) {
-        res.status(404).json({ message: 'Carrito no encontrado' });
-        return;
+    try {
+        const cart = new CartModel({ products: req.body.products });
+        await cart.save();
+        res.status(201).json(cart);
+    } catch (error) {
+        res.status(400).json({ message: 'No se pudo crear el carrito' });
     }
-    res.json(cart);
 });
 
-// Ruta para agregar un producto a un carrito
+// Agregar un producto al carrito
 router.post('/:cid/product/:pid', async (req, res) => {
-    const cartId = parseInt(req.params.cid);
-    const productId = parseInt(req.params.pid);
-    const quantity = parseInt(req.body.quantity || 1);
-
-    if (isNaN(cartId) || isNaN(productId) || isNaN(quantity)) {
-        res.status(400).json({ message: 'Parámetros inválidos' });
-        return;
+    const { cid, pid } = req.params;
+    try {
+        const cart = await CartModel.findById(cid);
+        const existingProductIndex = cart.products.findIndex(p => p.productId.equals(pid));
+        if (existingProductIndex >= 0) {
+            cart.products[existingProductIndex].quantity += 1;
+        } else {
+            cart.products.push({ productId: pid, quantity: 1 });
+        }
+        await cart.save();
+        res.status(200).json(cart);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al agregar producto al carrito' });
     }
-
-    const cart = await cartManager.addProductToCart(cartId, productId, quantity);
-    if (!cart) {
-        res.status(404).json({ message: 'Carrito no encontrado' });
-        return;
-    }
-    res.json(cart);
 });
 
-export default router; // Exporta el router por defecto
+export default router;

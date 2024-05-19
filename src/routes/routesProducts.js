@@ -1,13 +1,12 @@
 import express from 'express';
-import ProductModel from '../dao/models/product.model.js'
+import ProductModel from '../dao/models/product.model.js';
 import { socketServer } from '../app.js';
 
 const router = express.Router();
 
-// Endpoints
 router.get('/', async (req, res) => {
     try {
-        const products = await ProductModel.find();
+        const products = await ProductModel.find().lean();
         res.render('home', { products });
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener los productos' });
@@ -17,7 +16,7 @@ router.get('/', async (req, res) => {
 router.get('/:pid', async (req, res) => {
     const { pid } = req.params;
     try {
-        const product = await ProductModel.findById(pid);
+        const product = await ProductModel.findById(pid).lean();
         if (!product) {
             return res.status(404).json({ message: 'Producto no encontrado' });
         }
@@ -32,8 +31,8 @@ router.post('/', async (req, res) => {
     try {
         const product = new ProductModel({ title, category, description, price, thumbnail, code, stock });
         await product.save();
-        socketServer.emit('productAdded', product);
-        res.redirect('/');
+        socketServer.emit('productAdded', product.toObject()); // Convierte el documento a objeto plano
+        res.status(200).json({ message: 'Producto agregado correctamente' });
     } catch (error) {
         res.status(400).json({ message: 'No se pudo agregar el producto' });
     }
