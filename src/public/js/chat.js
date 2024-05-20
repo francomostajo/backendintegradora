@@ -1,12 +1,12 @@
 const socket = io();
 
 const form = document.getElementById('chatForm');
-const input = document.getElementById('messageInput');
+const input = document.getElementById('message');
 const messages = document.getElementById('messages');
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const user = 'user@example.com'; // Placeholder, replace with actual user email or ID
+    const user = 'user@example.com'; //ejemplo de carga en la nube de usuario por html
     const message = input.value;
     socket.emit('chatMessage', { user, message });
     input.value = '';

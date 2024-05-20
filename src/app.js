@@ -3,7 +3,8 @@ import handlebars from 'express-handlebars';
 import { Server } from 'socket.io';
 import routesProduct from './routes/routesProducts.js';
 import routesCart from './routes/routesCarts.js';
-import routesUser from './routes/routesUsers.js'
+import routesUser from './routes/routesUsers.js';
+import routesMessages from './routes/routesMessages.js';
 import __dirname from './utils.js';
 import routesView from './routes/routesViews.js';
 import { initializeSockets } from './dao/socketManager.js';
@@ -20,8 +21,8 @@ app.use(express.json());
 
 app.use('/api/products', routesProduct);
 app.use('/api/carts', routesCart);
-app.use ('/api/users', routesUser)
-
+app.use ('/api/users', routesUser);
+app.use('/api/chat', routesMessages)
 app.use(express.static(__dirname + "/public"));
 
 // Handlebars
